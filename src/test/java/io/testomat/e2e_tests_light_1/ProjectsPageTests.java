@@ -10,7 +10,7 @@ import static com.codeborne.selenide.Selenide.open;
 public class ProjectsPageTests {
 
     @Test
-    public void firstTest() {
+    public void openingProjectWithTests() {
         open("https://app.testomat.io/");
 
         //login user
