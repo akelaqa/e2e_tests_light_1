@@ -1,34 +1,97 @@
 package io.testomat.e2e_tests_light_1;
-
+import com.codeborne.selenide.SelenideElement;
+import io.testomat.e2e_tests_light_1.utils.StringParsers;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static com.codeborne.selenide.Condition.text;
-import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.open;
+import static com.codeborne.selenide.Selenide.*;
+import static io.testomat.e2e_tests_light_1.LoginPage.loginUser;
+import static io.testomat.e2e_tests_light_1.MainPaige.*;
+import static io.testomat.e2e_tests_light_1.ProjectPage.*;
 
-public class ProjectsPageTests {
+public class ProjectsPageTests extends BaseTest {
+
+    static String baseUrl = env.get("BASE_URL");
+    static String userName = env.get("EMAIL");
+    static String password = env.get("PASSWORD");
+    String targetProjectName = "manufacture light";
+    String testSuiteName = "First Test suite";
+
+    @BeforeAll
+    static void openTestomatAndLogin() {
+        open(baseUrl);
+        loginUser(userName, password);
+    }
+
+    @BeforeEach
+    void openHomePage() {
+        open(baseUrl);
+    }
 
     @Test
     public void openingProjectWithTests() {
-        open("https://app.testomat.io/");
+        searchForProject(targetProjectName);
 
-        //login user
-        $("#content-desktop #user_email").setValue("smashnyyvova@gmail.com");
-        $("#content-desktop #user_password").setValue("Tests240861V1!");
-        $("#content-desktop #user_remember_me").click();
-        $("#content-desktop [name='commit']").click();
-        $("#user-menu-button").shouldBe(visible);
-        $(".common-flash-success").shouldBe(visible);
+        selectProject(targetProjectName);
 
-        //search project
-        $("#search").setValue("manufacture light");
+        waitForProjectPageIsLoaded(targetProjectName);
+    }
 
-        //select project
-        $("[title='manufacture light']").click();
+    @Test
+    public void verificationOfProjectProperties() {
+        searchForProject(targetProjectName);
 
-        //wait for project is loaded
-        $("h2").shouldHave(text("manufacture light"));
-        $("#ember40").shouldBe(visible);
+        SelenideElement targetProject = countOfProjectsShouldBeEqualTo(1, targetProjectName).first();
+
+        countOfTestCasesShouldBeEqualTo(targetProject, 0);
+
+        numberOfProjectUsersGreaterThan(targetProject, 10);
+    }
+
+    @Test
+    public void verificationOfUserStatus() {
+        numberOfLeftDaysOfUserTrialPeriodShouldBeGreaterThan(1);
+    }
+
+    @Test
+    public void creatingNewTestSuite() {
+        searchForProject(targetProjectName);
+
+        selectProject(targetProjectName);
+
+        waitForProjectPageIsLoaded(targetProjectName);
+
+        createNewTestSuite(testSuiteName);
+
+        deleteTestSuite(testSuiteName);
+
+        acceptDeletingSuite();
+    }
+
+    @Test
+    public void verificationOfChat() {
+        openChat();
+
+        checkChatItems();
+
+        closeChat();
+    }
+
+    @Test
+    public void exampleParseDouble() {
+        Assertions.assertEquals(4.4, StringParsers.parseDoubleFromString("Project rate: 4.4"));
+    }
+
+    @Test
+    public void exampleParseInteger() {
+        Assertions.assertEquals(15, StringParsers.parseIntegerFromString("Total users: 15"));
+    }
+
+    @Test
+    public void exampleParseBoolean() {
+        var value = "true";
+        Assertions.assertEquals(true, Boolean.parseBoolean(value));
     }
 }

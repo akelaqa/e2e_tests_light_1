@@ -10,15 +10,27 @@ repositories {
 }
 
 ext {
-    junitVersion='5.10.2'
+    junitVersion = '5.11.3'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(19)
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    implementation("io.github.cdimascio:java-dotenv:5.2.2")
 
-    testImplementation 'com.codeborne:selenide:7.6.1'
-    testRuntimeOnly 'org.slf4j:slf4j-simple:2.0.13'
+    implementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+    runtimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+
+    implementation('com.codeborne:selenide:7.6.1')
+    runtimeOnly('org.slf4j:slf4j-simple:2.0.13')
 }
 
 test {
