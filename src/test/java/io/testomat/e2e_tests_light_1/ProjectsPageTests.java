@@ -1,19 +1,20 @@
 package io.testomat.e2e_tests_light_1;
+
 import com.codeborne.selenide.SelenideElement;
 import io.testomat.e2e_tests_light_1.utils.StringParsers;
+import io.testomat.e2e_tests_light_1.web.pages.ProjectPage;
+import io.testomat.e2e_tests_light_1.web.pages.ProjectsPage;
+import io.testomat.e2e_tests_light_1.web.pages.SignInPage;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static com.codeborne.selenide.Selenide.*;
-import static io.testomat.e2e_tests_light_1.LoginPage.loginUser;
-import static io.testomat.e2e_tests_light_1.MainPaige.*;
-import static io.testomat.e2e_tests_light_1.ProjectPage.*;
-
 public class ProjectsPageTests extends BaseTest {
 
-    static String baseUrl = env.get("BASE_URL");
+    private static final ProjectsPage projectsPage = new ProjectsPage();
+    private static final SignInPage signInPage = new SignInPage();
+    private static final ProjectPage projectPage = new ProjectPage();
     static String userName = env.get("EMAIL");
     static String password = env.get("PASSWORD");
     String targetProjectName = "manufacture light";
@@ -21,62 +22,56 @@ public class ProjectsPageTests extends BaseTest {
 
     @BeforeAll
     static void openTestomatAndLogin() {
-        open(baseUrl);
-        loginUser(userName, password);
+        signInPage.open();
+        signInPage.loginUser(userName, password);
+        projectsPage.signInSuccess();
     }
 
     @BeforeEach
-    void openHomePage() {
-        open(baseUrl);
+    void openProjectsPage() {
+        projectsPage.open();
+        projectsPage.isLoaded();
     }
 
     @Test
     public void openingProjectWithTests() {
-        searchForProject(targetProjectName);
-
-        selectProject(targetProjectName);
-
-        waitForProjectPageIsLoaded(targetProjectName);
+        projectsPage.searchForProject(targetProjectName);
+        projectsPage.selectProject(targetProjectName);
+        projectPage.isLoaded(targetProjectName);
     }
 
     @Test
-    public void verificationOfProjectProperties() {
-        searchForProject(targetProjectName);
-
-        SelenideElement targetProject = countOfProjectsShouldBeEqualTo(1, targetProjectName).first();
-
-        countOfTestCasesShouldBeEqualTo(targetProject, 0);
-
-        numberOfProjectUsersGreaterThan(targetProject, 10);
+    public void verificationProjectProperties() {
+        projectsPage.searchForProject(targetProjectName);
+        SelenideElement targetProject = projectsPage.countOfProjectsShouldBeEqualTo(1, targetProjectName).first();
+        Integer actualCountOfTests = projectsPage.getCountOfTestCases(targetProject);
+        Assertions.assertEquals(0, actualCountOfTests,
+                "Expected number of test cases are not matched with actual: " + actualCountOfTests);
+        Integer actualCountOfUsers = projectsPage.getNumberOfProjectUsers(targetProject);
+        Assertions.assertTrue(actualCountOfUsers > 10, "Expected number of users are not matched with actual: " + actualCountOfUsers);
     }
 
     @Test
     public void verificationOfUserStatus() {
-        numberOfLeftDaysOfUserTrialPeriodShouldBeGreaterThan(1);
+        Assertions.assertTrue(projectsPage.getNumberOfLeftDaysOfUserTrialPeriod() > 1,
+                "Trial period ended. License update required");
     }
 
     @Test
     public void creatingNewTestSuite() {
-        searchForProject(targetProjectName);
-
-        selectProject(targetProjectName);
-
-        waitForProjectPageIsLoaded(targetProjectName);
-
-        createNewTestSuite(testSuiteName);
-
-        deleteTestSuite(testSuiteName);
-
-        acceptDeletingSuite();
+        projectsPage.searchForProject(targetProjectName);
+        projectsPage.selectProject(targetProjectName);
+        projectPage.isLoaded(targetProjectName);
+        projectPage.createNewTestSuite(testSuiteName);
+        projectPage.deleteTestSuite(testSuiteName);
+        projectPage.acceptDeletingSuite();
     }
 
     @Test
     public void verificationOfChat() {
-        openChat();
-
-        checkChatItems();
-
-        closeChat();
+        projectsPage.openChat();
+        projectsPage.checkChatItems();
+        projectsPage.closeChat();
     }
 
     @Test
@@ -92,6 +87,6 @@ public class ProjectsPageTests extends BaseTest {
     @Test
     public void exampleParseBoolean() {
         var value = "true";
-        Assertions.assertEquals(true, Boolean.parseBoolean(value));
+        Assertions.assertTrue(Boolean.parseBoolean(value));
     }
 }
